@@ -14,7 +14,8 @@ project/
 │   ├── openai_provider.py       # call_openai()
 │   ├── anthropic_provider.py    # call_anthropic()
 │   ├── together_provider.py     # call_together()
-│   └── ...
+│   ├── ollama_provider.py       # call_ollama()
+│   └── openrouter_provider.py   # call_openrouter()
 ├── llm_client.py                # router
 └── main.py
 ```
@@ -23,14 +24,16 @@ project/
 
 | Provider | Funzione | Libreria | Modello consigliato per il testing |
 |---|---|---|---|
-| OpenAI | `call_openai()` | `openai` | `gpt-4o-mini` |
+| OpenAI | `call_openai()` | `openai` | `gpt-5.4-nano` |
 | Anthropic | `call_anthropic()` | `anthropic` | `claude-haiku-4-5` |
 | Together AI | `call_together()` | `together` | `openai/gpt-oss-20b` |
+| Ollama | `call_ollama()` | `ollama` | `gpt-oss:20b-cloud` |
+| OpenRouter | `call_openrouter()` | `openrouter` | modello gratuito (suffisso `:free`) |
 
 ## Installazione Dipendenze
 
 ```bash
-pip install openai anthropic together
+pip install openai anthropic together ollama openrouter
 ```
 
 ## Firma delle Funzioni
@@ -66,8 +69,9 @@ Tutti i provider restituiscono un dizionario con struttura identica:
 - **Anthropic**: il `system_prompt` non fa parte del campo `messages` ma viene passato come parametro separato. Struttura della risposta diversa rispetto agli altri provider.
 - **OpenAI**: disponibili due API distinte (Chat Completions e la nuova Responses API) con strutture e nomi dei contatori di token differenti.
 - **Together AI**: formato di richiesta analogo a OpenAI Chat Completions. Supporta il ragionamento esteso su modelli ibridi tramite parametro dedicato.
+- **Ollama**: utilizza Ollama Cloud (non locale). Richiede un client configurato con host remoto e header di autorizzazione Bearer. Il parametro `api_key` è obbligatorio.
+- **OpenRouter**: gateway multi-provider con SDK Python (attualmente in versione beta). Il client si gestisce come context manager (`with`). Consultare sempre la documentazione aggiornata per nomi di metodi e attributi.
 - Il parametro `reasoning` non è supportato da tutti i modelli: verificare la documentazione del provider prima dell'uso.
-- Per provider locali (es. Ollama) il parametro `api_key` può essere ignorato.
 
 ## Risorse
 
@@ -75,5 +79,8 @@ Tutti i provider restituiscono un dizionario con struttura identica:
 - [W3Schools Python](https://www.w3schools.com/python/)
 - [Real Python](https://realpython.com/)
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference/chat)
+- [OpenAI Responses API Reference](https://platform.openai.com/docs/api-reference/responses)
 - [Anthropic API Reference](https://docs.anthropic.com/en/api/messages)
 - [Together AI API Reference](https://docs.together.ai/docs/chat-overview)
+- [Ollama Cloud API Reference](https://docs.ollama.com/cloud)
+- [OpenRouter SDK Python](https://openrouter.ai/docs/sdks/python)
