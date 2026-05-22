@@ -23,7 +23,7 @@ def generate_response(
     api_key: str
 ) -> dict:
 
-    handler = _providers.get(provider)
+    handler = _providers[provider]
 
     return handler(
         model=model,
