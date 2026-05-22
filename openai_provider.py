@@ -23,9 +23,10 @@ def call_openai(
         "max_completion_tokens": max_output_tokens,
     }
 
+    request["temperature"] = 1
+
     if reasoning:
-        request["reasoning_effort"] = "medium"
-        request["temperature"] = 1 
+        request["reasoning_effort"] = "xhigh"
     else:
         request["temperature"] = temperature
 
@@ -44,5 +45,5 @@ print(call_openai(
     system_prompt="Sei un mio caro amico",
     user_prompt="Ciao, come stai?",
     reasoning=True,
-    api_key="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"
+    api_key="your_api_key_here"
 ))
