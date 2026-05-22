@@ -1,0 +1,104 @@
+MODELLO:openai/gpt-oss-20b
+from together_provider import call_together
+
+print(call_together(
+    model="openai/gpt-oss-20b",
+    max_output_tokens=100,
+    temperature=0.1,
+    system_prompt="Sei un esperto in geografia",
+    user_prompt="Scrivimi qual è la capitale della Cina",
+    reasoning=False,
+    api_key=""
+))
+OUTPUT:
+{'text': 'La capitale della Cina è **Pechino (Beijing)**.', 'input_tokens': 92, 'output_tokens': 76}
+
+MODELLO:gpt-4o-mini
+Non funziona, modello non supportato da Toghether
+
+MODELLO:claude-3-haiku-20240307
+Non funziona, modello non supportato da Toghether
+
+MODELLO:meta-llama/Meta-Llama-3-8B-Instruct-Lite
+from together_provider import call_together
+
+print(call_together(
+    model="meta-llama/Meta-Llama-3-8B-Instruct-Lite",
+    max_output_tokens=100,
+    temperature=0.5,
+    system_prompt="Sei un esperto in problemi di logica e ragionamento",
+    user_prompt="Se ho 5 mele, ne regalo 2 e poi ne compro altre 4, quante me ne restano?",
+    reasoning=False,
+    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+))
+OUTPUT:
+{'text': 'Un problema di logica!\n\nInizia con 5 mele.\n\nRegali 2 mele, quindi ne hai 5 - 2 = 3.\n\nPoi, ne compri altre 4, quindi hai 3 + 4 = 7 mele.\n\nQuindi, ne restano 7!', 'input_tokens': 58, 'output_tokens': 66}
+
+MODELLO:gpt-5.4-nano
+Non funziona, modello non supportato da Toghether
+
+MODELLO:claude-haiku-4-5
+Non funziona, modello non supportato da Toghether
+
+MODELLO:google/gemma-3n-E4B-it
+from together_provider import call_together
+
+print(call_together(
+    model="google/gemma-3n-E4B-it",
+    max_output_tokens=150,
+    temperature=0.9,
+    system_prompt="Sei un narratore molto fantasioso",
+    user_prompt="Scrivi una storia di 4 frasi di un dinosauro che impara a cucinare.",
+    reasoning=False,
+    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+))
+OUPUT:
+{'text': 'Rex era un tirannosauro con un amore segreto per le deliziose prelibatezze, un desiderio che era in contrasto con la sua reputazione di predatore. Un giorno, stanco della solita dieta a base di erbivori, Rex si imbatté in un vecchio libro di cucina appartenuto a un pterosauro avventuroso. Con un paio di zampe gigantesche e una sorprendente attenzione ai dettagli, Rex iniziò a sperimentare, trasformando le bacche e le foglie in piatti deliziosi. Ben presto, la valle era piena del profumo delle torte di corteccia di albero di Rex e dei frullati di frutta ai semi, ed era famoso per le', 'input_tokens': 39, 'output_tokens': 150}
+
+MODELLO:essentialai/rnj-1-instruct
+from together_provider import call_together
+
+print(call_together(
+    model="essentialai/rnj-1-instruct",
+    max_output_tokens=80,
+    temperature=0.4,
+    system_prompt="Sei un assistente esperto di cultura generale",
+    user_prompt="Chi ha scritto la Divina Commedia",
+    reasoning=False,
+    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+))
+OUPUT:
+{'text': 'La Divina Commedia è stata scritta da Dante Alighieri.', 'input_tokens': 51, 'output_tokens': 17}
+
+MODELLO:deepcogito/cogito-v2-1-671b
+from together_provider import call_together
+
+print(call_together(
+    model="deepcogito/cogito-v2-1-671b",
+    max_output_tokens=80,
+    temperature=0.3,
+    system_prompt="Sei un esperto di lingua italiana e sinonimi.",
+    user_prompt="Dammi un sinonimo della parola veloce",
+    reasoning=False,
+    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+))
+OUPUT:
+{'text': 'Ecco alcuni sinonimi di "veloce":\n\n1. Rapido\n2. Svelto\n3. Celere\n4. Presto\n5. Spedito\n6. Lesto\n7. Pronto\n8. Fulmineo\n9. Velocemente (avverbio)\n10. Accelerato\n\nLa scelta del sinonimo più appropriato dipende', 'input_tokens': 51, 'output_tokens': 80}
+
+MODELLO:deepseek-ai/DeepSeek-V4-Pro
+from together_provider import call_together
+
+print(call_together(
+    model="deepseek-ai/DeepSeek-V4-Pro",
+    max_output_tokens=80,
+    temperature=0.6,
+    system_prompt="Sei un esperto di scienze naturali.",
+    user_prompt="Quale pianeta è conosciuto come il pianeta rosso",
+    reasoning=False,
+    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+))
+OUPUT:
+{'text': "Marte è conosciuto come il pianeta rosso per via del suo caratteristico colore dovuto all'oss", 'input_tokens': 29, 'output_tokens': 80}
+
+
+https://api.together.ai/models?input=TEXT&output=TEXT
