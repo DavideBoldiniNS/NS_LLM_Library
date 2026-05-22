@@ -25,6 +25,7 @@ def call_anthropic(
     }
 
     if reasoning:
+        kwargs["temperature"] = 1.0
         kwargs["thinking"] = {
             "type": "enabled",
             "budget_tokens": min(max_output_tokens//2, 2048)
@@ -32,8 +33,13 @@ def call_anthropic(
         
     response = client.messages.create(**kwargs)
 
+    text = ""
+
+    for block in response.content:
+        if block.type == "text": text += block.text
+
     return {
-        "text": response.content[0].text,
+        "text": text,
         "input_tokens": response.usage.input_tokens,
         "output_tokens": response.usage.output_tokens
     }
