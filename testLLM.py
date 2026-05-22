@@ -7,5 +7,5 @@ print(call_together(
     system_prompt="Sei un esperto di scienze naturali.",
     user_prompt="Quale pianeta è conosciuto come il pianeta rosso",
     reasoning=False,
-    api_key="tgp_v1_5san2gLji1FKy5fWq-6NzaWbI2az7IR0QZCuk3c5okQ"
+    api_key=""
 ))
