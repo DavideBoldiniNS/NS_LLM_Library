@@ -28,7 +28,7 @@ def call_anthropic(
         kwargs["temperature"] = 1.0
         kwargs["thinking"] = {
             "type": "enabled",
-            "budget_tokens": min(max_output_tokens//2, 2048)
+            "budget_tokens": max(1024, max_output_tokens//2)
         }
         
     response = client.messages.create(**kwargs)
