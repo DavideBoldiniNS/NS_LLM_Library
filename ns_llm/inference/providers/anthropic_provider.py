@@ -25,7 +25,7 @@ def call_anthropic(
     }
 
     if reasoning:
-        kwargs["temperature"] = 1.0
+        kwargs.pop("temperature")
         kwargs["thinking"] = {
             "type": "enabled",
             "budget_tokens": max(1024, max_output_tokens//2)
