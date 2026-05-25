@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "ns-llm"
+version = "1.0.0"
+description = "Libreria Python multi-provider per l'invocazione di modelli LLM"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openai",
+    "anthropic",
+    "together",
+    "ollama",
+    "openrouter",
+]
