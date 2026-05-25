@@ -2,8 +2,6 @@
 
 Libreria Python multi-provider per l'invocazione di modelli LLM. Progetto didattico per studenti ITIS che già conoscono Java e si avvicinano a Python.
 
-BLABLABLA
-
 ## Panoramica
 La libreria astrae tre provider cloud (OpenAI, Anthropic, Together AI) dietro un'interfaccia uniforme. Il modulo `llm_client.py` funge da router: riceve i parametri della chiamata e li smista al provider corretto. Ogni provider è implementato in un file dedicato nella cartella `providers/`.
 
