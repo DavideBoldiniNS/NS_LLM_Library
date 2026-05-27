@@ -17,6 +17,7 @@ class TestCallAnthropic:
         mock_client.messages.create.return_value = mock_response
         
         result = call_anthropic(**sample_params)
+        
         assert result == {
                 "text": "Risposta Anthropic",
                 "input_tokens": 10,
