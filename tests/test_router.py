@@ -11,7 +11,6 @@ def test_provider_non_valido(sample_params):
     with pytest.raises((KeyError, ValueError)):
         generate_response(provider="inesistente", **sample_params)
  
- 
 @pytest.mark.parametrize("provider", ["openai", "anthropic", "together", "ollama", "openrouter"])
 def test_tutti_i_provider(mocker, sample_params, sample_response, provider):
     mock = mocker.patch(f"ns_llm.inference.client.call_{provider}", return_value=sample_response)

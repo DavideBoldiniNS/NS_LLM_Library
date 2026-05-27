@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=61"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ns-llm"
@@ -14,4 +14,11 @@ dependencies = [
     "together",
     "ollama",
     "openrouter",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pytest-mock>=3.0",
+    "pytest-cov>=5.0",
 ]

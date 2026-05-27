@@ -1,6 +1,5 @@
 import pytest
 
-
 @pytest.fixture
 def sample_params():
     return {
@@ -12,7 +11,6 @@ def sample_params():
         "reasoning": False,
         "api_key": "fake-key-12345",
     }
-
 
 @pytest.fixture
 def sample_response():
