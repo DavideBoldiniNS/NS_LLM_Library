@@ -4,14 +4,6 @@ from .providers.together_provider import call_together
 from .providers.ollama_provider import call_ollama
 from .providers.openrouter_provider import call_openrouter
 
-_providers = {
-    "anthropic": call_anthropic,
-    "openai": call_openai,
-    "together": call_together,
-    "ollama": call_ollama,
-    "openrouter": call_openrouter
-}
-
 def generate_response(
     provider: str,
     model: str,
@@ -23,7 +15,13 @@ def generate_response(
     api_key: str
 ) -> dict:
 
-    handler = _providers[provider]
+    match provider:
+        case "anthropic": handler = call_anthropic
+        case "openai": handler = call_openai
+        case "together": handler = call_together
+        case "ollama": handler = call_ollama
+        case "openrouter": handler = call_openrouter
+        case _: raise ValueError(f"Provider '{provider}' non supportato.")
 
     return handler(
         model=model,
