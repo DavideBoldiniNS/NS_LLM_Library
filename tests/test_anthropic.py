@@ -40,7 +40,7 @@ class TestCallAnthropic:
 
         mock_client.messages.create.return_value = mock_response
 
-        mock_param = sample_params
+        mock_param = sample_params.copy()
         mock_param["reasoning"] = True
 
         result = call_anthropic(**sample_params)
