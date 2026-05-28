@@ -1,5 +1,5 @@
-# from ... import call_together
-# from ... import call_openrouter
+from .providers.together_provider import call_together
+from .providers.openrouter_provider import call_openrouter
 
 def generate_embedding(
     model: str,
@@ -11,11 +11,21 @@ def generate_embedding(
 ) -> dict:
     
     if provider == "together":
-        # return call_together(...)
-        pass
+        return call_together(
+            model=model,
+            input=text,
+            input_type=input_type,
+            dimensions=dimensions,
+            api_key=api_key
+        )
     elif provider == "openrouter":
-        # return call_openrouter(...)
-        pass
+        return call_openrouter(
+            model=model,
+            input=text,
+            input_type=input_type,
+            dimensions=dimensions,
+            api_key=api_key
+        )
     else: raise ValueError(f"Provider '{provider}' non riconosciuto. "
             "I valori validi sono: 'together', 'openrouter'.")
 
