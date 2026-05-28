@@ -44,7 +44,7 @@ class TestCallAnthropic:
         mock_param = sample_params.copy()
         mock_param["reasoning"] = True
 
-        result = call_anthropic(**sample_params)
+        result = call_anthropic(**mock_param)
 
         assert result == {
                 "text": "Risposta Anthropic",
