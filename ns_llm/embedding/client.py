@@ -13,7 +13,7 @@ def generate_embedding(
     if provider == "together":
         return call_together(
             model=model,
-            input=text,
+            text=text,
             input_type=input_type,
             dimensions=dimensions,
             api_key=api_key
@@ -21,7 +21,7 @@ def generate_embedding(
     elif provider == "openrouter":
         return call_openrouter(
             model=model,
-            input=text,
+            text=text,
             input_type=input_type,
             dimensions=dimensions,
             api_key=api_key

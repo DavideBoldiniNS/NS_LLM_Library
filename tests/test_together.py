@@ -1,6 +1,5 @@
-from ns_llm.inference.providers.together_provider import(
-    call_together,
-)
+from ns_llm.inference.providers.together_provider import call_together
+
 class TestCallTogether:
     def test_senza_reasoning(self,mocker,sample_params):
         mock_together_cls=mocker.patch(

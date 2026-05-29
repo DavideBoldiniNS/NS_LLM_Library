@@ -1,6 +1,4 @@
-from ns_llm.inference.providers.openrouter_provider import(
-    call_openrouter,
-)
+from ns_llm.inference.providers.openrouter_provider import call_openrouter
 class TestCallOpenRouter:
     def test_senza_reasoning(self, mocker,sample_params):
         mock_openrouter_cls=mocker.patch(
@@ -28,19 +26,13 @@ class TestCallOpenRouter:
             "output_tokens":5,
             "input_tokens":10,
         }
-        mock_openrouter_cls.assert_called_once_with(
-            api_key="fake-key-12345"
-        )
+        mock_openrouter_cls.assert_called_once_with(api_key="fake-key-12345")
         chiamata=mock_client.chat.send
         chiamata.assert_called_once()
-        assert(
-            chiamata.call_args.kwargs["temperature"]
-            ==1
-        )
-        assert(
-            "reasoning"
-            not in chiamata.call_args.kwargs
-        )
+        assert chiamata.call_args.kwargs["temperature"] == 0.7
+        
+        assert "reasoning" not in chiamata.call_args.kwargs
+        
     def test_con_reasoning(self,mocker,sample_params):
         mock_openrouter_cls=mocker.patch(
             "ns_llm.inference.providers."
@@ -55,7 +47,6 @@ class TestCallOpenRouter:
         mock_message.content="Risposta ragionata"
         mock_choice.message=mock_message
         mock_response=mocker.MagicMock()
-        mock_response.choices=[mock_choice]
         mock_usage=mocker.MagicMock()
         mock_response.choices=[mock_choice]
         mock_usage.prompt_tokens=20
@@ -63,20 +54,18 @@ class TestCallOpenRouter:
         mock_response.usage=mock_usage
         mock_client.chat.send.return_value=mock_response
         params=sample_params.copy()
-        params["reasoning"]=True
+        params["reasoning"]={"enabled":True}
         result=call_openrouter(**params)
         assert result["text"]=="Risposta ragionata"
         assert result["input_tokens"]==20
         assert result["output_tokens"]==15
         chiamata=mock_client.chat.send
-        assert(
-            chiamata.call_args.kwargs["temperature"]
-            ==1
-        )
-        assert(
-            chiamata.call_args.kwargs["reasoning"]
-            =={"enabled":True}
-        )
+        chiamata.assert_called_once()
+
+        assert chiamata.call_args.kwargs["temperature"] == 0.7
+        
+        assert chiamata.call_args.kwargs["reasoning"] == {"enabled":True}
+        
     def test_formato_risposta(self, mocker, sample_params):
         mock_openrouter_cls=mocker.patch(
             "ns_llm.inference.providers."
