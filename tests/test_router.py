@@ -22,7 +22,7 @@ def test_tutti_i_provider(mocker, sample_params, sample_response, provider):
 
 #   EMBEDDING
 def test_provider_embedding_valido(mocker, sample_embedding_params, sample_embedding_response):
-    mock = mocker.patch("ns_llm.embedding.client.call_openai", return_value=sample_embedding_response)
+    mock = mocker.patch("ns_llm.embedding.client.call_openrouter", return_value=sample_embedding_response)
     result = generate_embedding(provider="openrouter", **sample_embedding_params)
     mock.assert_called_once()
     assert result == sample_embedding_response
