@@ -29,7 +29,7 @@ class TestCallTogether:
         chiamata.assert_called_once()
         assert(
             chiamata.call_args.kwargs["temperature"]
-            ==1
+            ==0.7
         )
         assert(
             chiamata.call_args.kwargs["max_tokens"]
@@ -67,7 +67,7 @@ class TestCallTogether:
         chiamata=mock_client.chat.completions.create
         assert(
             chiamata.call_args.kwargs["temperature"]
-            ==1 #0.7
+            ==0.7
         )
         assert(
             chiamata.call_args.kwargs["max_output_tokens"]
