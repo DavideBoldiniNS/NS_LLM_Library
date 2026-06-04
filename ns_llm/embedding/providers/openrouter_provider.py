@@ -1,5 +1,4 @@
 from openrouter import OpenRouter
-import requests
 
 def call_openrouter(
     model: str,
@@ -8,33 +7,21 @@ def call_openrouter(
     dimensions: int,
     api_key: str
 ) -> dict:
-    url = "https://openrouter.ai/api/v1/embeddings"
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "model": model,
-        "input": text
-    }
-    
-    if input_type:
-        payload["input_type"] = input_type
-        
-    if dimensions > 0:
-        payload["dimensions"] = dimensions
-
-    response = requests.post(url, headers=headers, json=payload)
-    response.raise_for_status()
-    
-    response_data = response.json()
-    
-    embedding_vector = response_data["data"][0]["embedding"]
-    tokens_used = response_data["usage"]["prompt_tokens"]
-    
-    return {
-        "embedding": embedding_vector,
-        "input_tokens": tokens_used
+    with OpenRouter(api_key=api_key) as client:
+        kwargs={
+            "model": model,
+            "input": text,
+        }
+        if dimensions>0:
+            kwargs["dimensions"]=dimensions
+        if "supporta-input-type" in model:
+            kwargs["input_type"]=input_type
+        response=client.embeddings.create(**kwargs)
+    embedding=response.data[0].embedding
+    input_tokens=0
+    if hasattr(response, "usage") and hasattr(response.usage, "input_tokens"):
+        input_tokens=response.usage.input_tokens
+    return{
+        "embedding": embedding,
+        "input_tokens": input_tokens
     }
