@@ -26,4 +26,4 @@ jobs:
           pip install -e ".[test]"
 
       - name: Run tests
-        run: pytest --cov=ns_llm --cov-fail-under=80 -v --ignore=tests/test_openrouter_embedding.py
+        run: pytest --cov=ns_llm --cov-fail-under=80 -v

@@ -7,6 +7,8 @@ def call_openrouter(
     dimensions: int,
     api_key: str
 ) -> dict:
+    if not isinstance(text,str) or text.strip()=="":
+        raise ValueError("Il parametro 'text' deve essere una stringa non vuota.")
     with OpenRouter(api_key=api_key) as client:
         kwargs={
             "model": model,
@@ -17,10 +19,11 @@ def call_openrouter(
         if "supporta-input-type" in model:
             kwargs["input_type"]=input_type
         response=client.embeddings.create(**kwargs)
-    embedding=response.data[0].embedding
-    input_tokens=0
-    if hasattr(response, "usage") and hasattr(response.usage, "input_tokens"):
-        input_tokens=response.usage.input_tokens
+        embedding=response.data[0].embedding
+        input_tokens=0
+        if hasattr(response, "usage") and response.usage is not None:
+            if hasattr(response.usage,"input_tokens"):
+                input_tokens=response.usage.input_tokens
     return{
         "embedding": embedding,
         "input_tokens": input_tokens
