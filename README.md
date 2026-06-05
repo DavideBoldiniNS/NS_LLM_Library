@@ -4,33 +4,39 @@ Libreria Python multi-provider per l'invocazione di modelli LLM. Progetto didatt
 
 ## Panoramica
 
-La libreria astrae cinque provider cloud (OpenAI, Anthropic, Together AI, Ollama Cloud, OpenRouter) dietro un'interfaccia uniforme. Il modulo `ns_llm/inference/client.py` funge da router: riceve i parametri della chiamata e li smista al provider corretto. Ogni provider è implementato in un file dedicato nella cartella `ns_llm/inference/providers/`.
+La libreria astrae cinque provider cloud (OpenAI, Anthropic, Together AI, Ollama Cloud, OpenRouter) dietro un'interfaccia uniforme. Il modulo `ns_llm/inference/client.py` funge da router per le chiamate di inferenza; `ns_llm/embedding/client.py` svolge lo stesso ruolo per gli embedding (Together AI e OpenRouter). Ogni provider è implementato in un file dedicato.
 
 ## Struttura del Progetto
 
 ```
 ns_llm/
 ├── __init__.py
-└── inference/
+├── inference/
+│   ├── __init__.py
+│   ├── client.py                      # router (generate_response)
+│   └── providers/
+│       ├── openai_provider.py         # call_openai()
+│       ├── anthropic_provider.py      # call_anthropic()
+│       ├── together_provider.py       # call_together()
+│       ├── ollama_provider.py         # call_ollama()
+│       └── openrouter_provider.py     # call_openrouter()
+└── embedding/
     ├── __init__.py
-    ├── client.py                      # router (generate_response)
+    ├── client.py                      # router (generate_embedding)
     └── providers/
-        ├── openai_provider.py         # call_openai()
-        ├── anthropic_provider.py      # call_anthropic()
         ├── together_provider.py       # call_together()
-        ├── ollama_provider.py         # call_ollama()
         └── openrouter_provider.py     # call_openrouter()
 ```
 
 ## Provider Supportati
 
-| Provider | Funzione | Libreria | Modello consigliato per il testing |
-|---|---|---|---|
-| OpenAI | `call_openai()` | `openai` | `gpt-4.1-nano` |
-| Anthropic | `call_anthropic()` | `anthropic` | `claude-haiku-4-5` |
-| Together AI | `call_together()` | `together` | `openai/gpt-oss-20b` |
-| Ollama | `call_ollama()` | `ollama` | `gpt-oss:20b-cloud` |
-| OpenRouter | `call_openrouter()` | `openrouter` | modello gratuito (suffisso `:free`) |
+| Provider | Inference | Embedding | Libreria | Modello consigliato per il testing |
+|---|---|---|---|---|
+| OpenAI | `call_openai()` | — | `openai` | `gpt-4.1-nano` |
+| Anthropic | `call_anthropic()` | — | `anthropic` | `claude-haiku-4-5` |
+| Together AI | `call_together()` | `call_together()` | `together` | `openai/gpt-oss-20b` (chat) / `together/bge-large-en-v1.5` (embed) |
+| Ollama | `call_ollama()` | — | `ollama` | `gpt-oss:20b-cloud` |
+| OpenRouter | `call_openrouter()` | `call_openrouter()` | `openrouter` | modello gratuito (suffisso `:free`) |
 
 ## Installazione Dipendenze
 
@@ -85,6 +91,58 @@ print(result["text"])
 ```
 
 I nomi dei provider sono **case-insensitive** (`"OpenAI"`, `"openai"` e `"OPENAI"` sono equivalenti). Una validazione di base controlla che i campi non siano vuoti, che `max_output_tokens` sia un intero positivo e che `temperature` sia compreso in `[0, 2]`.
+
+## Embedding
+
+Anche il layer di embedding espone un router uniforme dietro `ns_llm.generate_embedding`:
+
+```python
+from ns_llm import generate_embedding
+
+result = generate_embedding(
+    provider="together",
+    model="together/bge-large-en-v1.5",
+    text="L'intelligenza artificiale sta cambiando il mondo.",
+    input_type="search_document",
+    dimensions=0,
+    api_key="...",
+    supports_input_type=True,   # il modello accetta 'input_type'
+    supports_dimensions=False,  # il modello non supporta 'dimensions'
+)
+print(len(result["embedding"]), result["input_tokens"])
+```
+
+### Firma del router embedding
+
+```python
+def generate_embedding(
+    provider: str,             # "together" | "openrouter" (case-insensitive)
+    model: str,
+    text: str,                 # non vuoto (dopo strip)
+    input_type: str,           # "search_query" | "search_document" | altro
+    dimensions: int,           # >= 0 (0 = non specificato)
+    api_key: str,
+    supports_input_type: bool = False,  # invia 'input_type' solo se True
+    supports_dimensions: bool = False,  # invia 'dimensions' solo se True
+) -> dict:
+```
+
+Il dizionario di ritorno ha forma:
+
+```python
+{
+    "embedding": list[float],   # vettore embedding
+    "input_tokens": int,        # 0 se l'API non restituisce usage
+}
+```
+
+### Note implementative sull'embedding
+
+- **Provider supportati**: solo `together` e `openrouter` (gli altri provider della libreria non espongono embeddings equivalenti).
+- **`supports_input_type` / `supports_dimensions`**: sono flag espliciti passati dal chiamante, NON inferiti dal nome del modello. Questo evita lo sniffing fragile sul nome e tiene prevedibile il payload verso l'API. Impostare `True` solo se il modello scelto accetta davvero il parametro; in caso contrario l'API rifiuterà la chiamata.
+- **Together e prefissi `query:` / `passage:`**: quando `input_type="search_query"` il provider antepone automaticamente `query: ` al testo, e analogamente `passage: ` per `search_document`. Questa convenzione è richiesta da alcuni modelli (es. BGE, Moka). OpenRouter **non** applica questi prefissi.
+- **Validazione di base**: `text` non vuoto, `api_key` non vuoto, `dimensions >= 0`. Provider sconosciuto → `ValueError` con elenco dei validi.
+- **Eccezioni SDK**: non vengono mai normalizzate; le eccezioni native di `together` o `openrouter` vengono propagate al chiamante.
 
 ## Note Implementative
 

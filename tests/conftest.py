@@ -34,6 +34,8 @@ def sample_embedding_params():
         "input_type": "search_query",
         "dimensions": 0,
         "api_key": "fake-key-12345",
+        "supports_input_type": False,
+        "supports_dimensions": False,
     }
 
 @pytest.fixture

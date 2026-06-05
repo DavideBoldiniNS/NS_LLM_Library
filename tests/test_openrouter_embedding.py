@@ -7,7 +7,6 @@ class TestCallOpenRouterEmbedding:
         mock_cls = mocker.patch(
             "ns_llm.embedding.providers.openrouter_provider.OpenRouter"
         )
-        # OpenRouter usato come context manager
         mock_client = mock_cls.return_value.__enter__.return_value
 
         mock_response = mocker.MagicMock()
@@ -41,6 +40,24 @@ class TestCallOpenRouterEmbedding:
 
         assert result["input_tokens"] == 0
 
+    def test_usage_prompt_tokens_fallback(
+        self, mocker, sample_embedding_params
+    ):
+        mock_cls = mocker.patch(
+            "ns_llm.embedding.providers.openrouter_provider.OpenRouter"
+        )
+        mock_client = mock_cls.return_value.__enter__.return_value
+
+        mock_response = mocker.MagicMock()
+        mock_response.data = [mocker.MagicMock(embedding=[0.1])]
+        mock_response.usage.prompt_tokens = 17
+        del mock_response.usage.input_tokens
+        mock_client.embeddings.create.return_value = mock_response
+
+        result = call_openrouter(**sample_embedding_params)
+
+        assert result["input_tokens"] == 17
+
     def test_dimensions_zero_non_passato(
         self, mocker, sample_embedding_params
     ):
@@ -56,6 +73,7 @@ class TestCallOpenRouterEmbedding:
 
         params = sample_embedding_params.copy()
         params["dimensions"] = 0
+        params["supports_dimensions"] = True
 
         call_openrouter(**params)
 
@@ -63,14 +81,19 @@ class TestCallOpenRouterEmbedding:
         assert "dimensions" not in chiamata.call_args.kwargs
 
     @pytest.mark.parametrize(
-        "model, should_pass_input_type",
+        "supports_input_type, model, should_pass_input_type",
         [
-            ("openrouter/model-supporta-input-type", True),
-            ("openrouter/model-senza-input-type", False),
+            (True, "openrouter/model-A", True),
+            (False, "openrouter/model-B", False),
         ],
     )
     def test_input_type_solo_se_supportato(
-        self, mocker, sample_embedding_params, model, should_pass_input_type
+        self,
+        mocker,
+        sample_embedding_params,
+        supports_input_type,
+        model,
+        should_pass_input_type,
     ):
         mock_cls = mocker.patch(
             "ns_llm.embedding.providers.openrouter_provider.OpenRouter"
@@ -78,19 +101,40 @@ class TestCallOpenRouterEmbedding:
         mock_client = mock_cls.return_value.__enter__.return_value
 
         mock_response = mocker.MagicMock()
-        mock_response.data = [mocker.MagicMock(embedding=[0.2])]
+        mock_response.data = [mocker.MagicMock(embedding=[0.1])]
         mock_response.usage.input_tokens = 2
         mock_client.embeddings.create.return_value = mock_response
 
         params = sample_embedding_params.copy()
+        params["supports_input_type"] = supports_input_type
         params["model"] = model
 
         call_openrouter(**params)
 
-        chiamata = mock_client.embeddings.create
-        kwargs = chiamata.call_args.kwargs
+        kwargs = mock_client.embeddings.create.call_args.kwargs
 
         if should_pass_input_type:
-            assert "input_type" in kwargs
+            assert kwargs.get("input_type") == "search_query"
         else:
             assert "input_type" not in kwargs
+
+    def test_non_applica_prefix_query_o_passage(
+        self, mocker, sample_embedding_params
+    ):
+        mock_cls = mocker.patch(
+            "ns_llm.embedding.providers.openrouter_provider.OpenRouter"
+        )
+        mock_client = mock_cls.return_value.__enter__.return_value
+
+        mock_response = mocker.MagicMock()
+        mock_response.data = [mocker.MagicMock(embedding=[0.1])]
+        mock_response.usage.input_tokens = 1
+        mock_client.embeddings.create.return_value = mock_response
+
+        params = sample_embedding_params.copy()
+        params["input_type"] = "search_query"
+
+        call_openrouter(**params)
+
+        kwargs = mock_client.embeddings.create.call_args.kwargs
+        assert kwargs["input"] == "test"
