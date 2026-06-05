@@ -28,7 +28,7 @@ def call_openai(
     if reasoning:
         request["reasoning_effort"] = "xhigh"
     else:
-        request["temperature"] = temperature
+        request["reasoning_effort"] = "none"
 
     response = client.chat.completions.create(**request)
 
