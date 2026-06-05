@@ -9,11 +9,11 @@ description = "Libreria Python multi-provider per l'invocazione di modelli LLM"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "openai",
-    "anthropic",
-    "together",
-    "ollama",
-    "openrouter",
+    "openai>=1.97.0",
+    "anthropic>=0.50.0",
+    "together>=1.5.21",
+    "ollama>=0.5.1",
+    "openrouter>=0.9.1",
 ]
 
 [project.optional-dependencies]
