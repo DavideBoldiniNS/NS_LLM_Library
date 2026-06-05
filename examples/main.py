@@ -9,8 +9,8 @@ print("OpenAI:\n"+generate_response(
     model="gpt-5.4-nano",
     max_output_tokens=100,
     temperature=0.7,
-    system_prompt=sPrompt,
-    user_prompt=uPrompt,
+    system_prompt=sys_Prompt,
+    user_prompt=u_Prompt,
     reasoning=False,
     api_key=openai_api_key
     )["text"]
@@ -22,8 +22,8 @@ print("Anthropic:\n"+generate_response(
     model="claude-haiku-4-5",
     max_output_tokens=100,
     temperature=0.7,
-    system_prompt=sPrompt,
-    user_prompt=uPrompt,
+    system_prompt=sys_Prompt,
+    user_prompt=u_Prompt,
     reasoning=False,
     api_key=anthropic_api_key
     )["text"]
@@ -35,8 +35,8 @@ print("Ollama:\n"+generate_response(
     model="gpt-oss:20b-cloud",
     max_output_tokens=100,
     temperature=0.7,
-    system_prompt=sPrompt,
-    user_prompt=uPrompt,
+    system_prompt=sys_Prompt,
+    user_prompt=u_Prompt,
     reasoning=False,
     api_key=ollama_api_key
     )["text"]
@@ -48,8 +48,8 @@ print("OpenRouter:\n"+generate_response(
     model="openrouter/owl-alpha",
     max_output_tokens=100,
     temperature=0.7,
-    system_prompt=sPrompt,
-    user_prompt=uPrompt,
+    system_prompt=sys_Prompt,
+    user_prompt=u_Prompt,
     reasoning=False,
     api_key=openrouter_api_key
     )["text"]
@@ -61,8 +61,8 @@ print("Together:\n"+generate_response(
     model="openai/gpt-oss-20b",
     max_output_tokens=100,
     temperature=0.7,
-    system_prompt=sPrompt,
-    user_prompt=uPrompt,
+    system_prompt=sys_Prompt,
+    user_prompt=u_Prompt,
     reasoning=False,
     api_key=together_api_key
     )["text"]
