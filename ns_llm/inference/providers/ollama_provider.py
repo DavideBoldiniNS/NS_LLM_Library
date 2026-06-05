@@ -28,6 +28,8 @@ def call_ollama(
 
     if reasoning:
         options['reasoning'] = True
+    else:
+        options['reasoning'] = False
 
     response = client.chat(
         model=model,
