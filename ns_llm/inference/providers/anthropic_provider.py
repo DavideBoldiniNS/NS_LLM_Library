@@ -23,13 +23,18 @@ def call_anthropic(
             }
         ]
     }
+    if reasoning or "opus" in model: kwargs.pop("temperature")
 
     if reasoning:
-        kwargs["temperature"] = 1.0
-        kwargs["thinking"] = {
-            "type": "enabled",
-            "budget_tokens": min(max_output_tokens//2, 2048)
-        }
+        if "opus" in model:
+            kwargs["thinking"] = { "type": "adaptive" }
+        else:
+            kwargs["thinking"] = {
+                "type": "enabled",
+                "budget_tokens": max(1024, max_output_tokens//2)
+            }
+    else: 
+        kwargs["thinking"] = { "type": "disabled" }
         
     response = client.messages.create(**kwargs)
 
