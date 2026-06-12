@@ -204,12 +204,40 @@ def rerank(
 
 ## Note Implementative
 
+- **Streaming**: tutti i 5 provider supportano lo streaming con `stream=True`. OpenAI, Together e OpenRouter usano `stream=True` sulle loro chat completions. Anthropic usa `client.messages.stream()` come context manager. Ollama usa `stream=True` su `client.chat()`. Per Anthropic e OpenRouter, il context manager rimane aperto fino al consumo completo del generatore.
 - **Anthropic**: il `system_prompt` non fa parte del campo `messages` ma viene passato come parametro separato. La struttura della risposta è diversa dagli altri provider (lista di blocchi tipizzati). Quando `reasoning=True` su un modello `opus` viene attivato `thinking={"type": "adaptive"}` e `temperature` viene ignorata (con `UserWarning`).
 - **OpenAI**: viene usata la Chat Completions API. `max_completion_tokens` controlla il budget di output. `reasoning_effort` è sempre impostato esplicitamente (`"high"` quando `reasoning=True`, `None` quando `reasoning=False`).
 - **Together AI**: payload analogo a OpenAI Chat Completions. Il campo `reasoning={"enabled": True/False}` è sempre presente, in modo da non dipendere dai default SDK.
 - **Ollama**: utilizza esclusivamente Ollama Cloud (host `https://ollama.com`, autenticazione Bearer). L'istanza locale non è supportata. Il toggle di ragionamento è il parametro top-level `think=True/False` (NON dentro `options`).
 - **OpenRouter**: gateway multi-provider con SDK Python ufficiale. Il client si gestisce come context manager (`with`). Il payload `reasoning` usa lo schema OpenRouter: `{"effort": "high"}` quando acceso, `{"effort": "none"}` quando spento.
 - **Reasoning esplicito**: il parametro `reasoning` non è supportato da tutti i modelli; verificare la documentazione del provider prima dell'uso. La libreria lo imposta **sempre esplicitamente** (anche su `False`) per evitare di dipendere dai default SDK, che possono cambiare tra release.
+
+## Streaming
+
+Il parametro `stream=True` su `generate_response()` abilita lo streaming delle risposte, restituendo un generatore di chunk.
+
+```python
+from ns_llm import generate_response
+
+stream = generate_response(
+    provider="openai",
+    model="gpt-4.1-nano",
+    max_output_tokens=100,
+    temperature=0.7,
+    system_prompt="Sei un assistente.",
+    user_prompt="Racconta una storia.",
+    reasoning=False,
+    api_key="...",
+    stream=True,
+)
+
+for chunk in stream:
+    print(chunk["text"], end="", flush=True)
+```
+
+Ogni chunk e un dict con `text` (delta di testo) e `finish_reason` (`None` per chunk intermedi, `"stop"` o `"length"` per l'ultimo).
+
+Lo streaming e supportato da tutti i 5 provider di inference. Per i dettagli implementativi specifici di ogni provider, vedere le Note Implementative.
 
 ## Token Counting
 

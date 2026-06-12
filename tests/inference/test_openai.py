@@ -123,6 +123,52 @@ class TestCallOpenAI:
 
         assert result["text"] == ""
 
+    def test_stream_false_default(self, mocker, sample_params):
+        mock_openai_cls = mocker.patch("ns_llm.inference.providers.openai_provider.openai.OpenAI")
+        mock_client = mock_openai_cls.return_value
+        mock_choice = mocker.MagicMock()
+        mock_choice.message.content = "ok"
+        mock_response = mocker.MagicMock()
+        mock_response.choices = [mock_choice]
+        mock_response.usage.prompt_tokens = 1
+        mock_response.usage.completion_tokens = 1
+        mock_client.chat.completions.create.return_value = mock_response
+
+        result = call_openai(**sample_params, stream=False)
+        assert isinstance(result, dict)
+        assert result["text"] == "ok"
+
+    def test_stream_true_passa_stream_true(self, mocker, sample_params):
+        mock_openai_cls = mocker.patch("ns_llm.inference.providers.openai_provider.openai.OpenAI")
+        mock_client = mock_openai_cls.return_value
+        mock_client.chat.completions.create.return_value = (c for c in [])
+
+        call_openai(**sample_params, stream=True)
+        kwargs = mock_client.chat.completions.create.call_args.kwargs
+        assert kwargs.get("stream") is True
+
+    def test_stream_true_produce_chunk_con_parsed(self, mocker, sample_params):
+        mock_openai_cls = mocker.patch("ns_llm.inference.providers.openai_provider.openai.OpenAI")
+        mock_client = mock_openai_cls.return_value
+
+        def mock_chunks():
+            for text, finish in [("Hello", None), (" world", None), ("", "stop")]:
+                mock_choice = mocker.MagicMock()
+                mock_choice.delta.content = text
+                mock_choice.finish_reason = finish
+                mock_chunk = mocker.MagicMock()
+                mock_chunk.choices = [mock_choice]
+                yield mock_chunk
+
+        mock_client.chat.completions.create.return_value = mock_chunks()
+
+        gen = call_openai(**sample_params, stream=True)
+        chunks = list(gen)
+        assert len(chunks) == 3
+        assert chunks[0] == {"text": "Hello", "finish_reason": None}
+        assert chunks[1] == {"text": " world", "finish_reason": None}
+        assert chunks[2] == {"text": "", "finish_reason": "stop"}
+
     def test_formato_risposta(self, mocker, sample_params):
         mock_openai_cls = mocker.patch(
             "ns_llm.inference.providers."

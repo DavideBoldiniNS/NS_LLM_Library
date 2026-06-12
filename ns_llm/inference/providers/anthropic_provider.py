@@ -1,4 +1,5 @@
 import warnings
+from typing import Generator
 
 from anthropic import Anthropic
 
@@ -11,7 +12,8 @@ def call_anthropic(
     user_prompt: str,
     reasoning: bool,
     api_key: str,
-) -> dict:
+    stream: bool = False,
+) -> dict | Generator[dict, None, None]:
     """Invoke an Anthropic Messages model and normalize the response.
 
     The ``thinking`` parameter is set **explicitly** on every call so the
@@ -24,6 +26,9 @@ def call_anthropic(
     * ``reasoning=False`` -> ``thinking={"type":"disabled"}`` and the user
       supplied ``temperature`` is forwarded.
 
+    When ``stream=True`` the function returns a generator yielding
+    ``{"text": str, "finish_reason": str | None}`` chunks.
+
     Args:
         model: Anthropic model identifier (e.g. ``claude-haiku-4-5``).
         max_output_tokens: Upper bound for the generated tokens.
@@ -34,9 +39,12 @@ def call_anthropic(
         user_prompt: User message.
         reasoning: When ``True`` Anthropic extended thinking is enabled.
         api_key: Anthropic API key.
+        stream: When ``True`` enable streaming response.
 
     Returns:
-        A dict with ``text``, ``input_tokens`` and ``output_tokens``.
+        A dict with ``text``, ``input_tokens`` and ``output_tokens`` when
+        ``stream=False``, or a generator of ``{"text", "finish_reason"}``
+        chunks when ``stream=True``.
 
     Raises:
         anthropic.AnthropicError: any error propagated from the Anthropic SDK.
@@ -72,6 +80,9 @@ def call_anthropic(
         kwargs["temperature"] = temperature
         kwargs["thinking"] = {"type": "disabled"}
 
+    if stream:
+        return _stream_anthropic(client, kwargs)
+
     response = client.messages.create(**kwargs)
 
     text = ""
@@ -91,3 +102,10 @@ def call_anthropic(
         "input_tokens": response.usage.input_tokens,
         "output_tokens": response.usage.output_tokens,
     }
+
+
+def _stream_anthropic(client, kwargs) -> Generator[dict, None, None]:
+    with client.messages.stream(**kwargs) as stream_response:
+        for text in stream_response.text_stream:
+            yield {"text": text, "finish_reason": None}
+        yield {"text": "", "finish_reason": "stop"}

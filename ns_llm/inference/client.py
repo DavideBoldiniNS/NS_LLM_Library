@@ -1,3 +1,5 @@
+from typing import Generator
+
 from .providers.anthropic_provider import call_anthropic
 from .providers.ollama_provider import call_ollama
 from .providers.openai_provider import call_openai
@@ -19,6 +21,7 @@ def _validate_input(
     max_output_tokens: int,
     temperature: float,
     api_key: str,
+    stream: bool = False,
 ) -> None:
     if not isinstance(provider, str) or not provider.strip():
         raise ValueError("Il parametro 'provider' deve essere una stringa non vuota.")
@@ -40,6 +43,8 @@ def _validate_input(
         raise ValueError(
             "Il parametro 'temperature' deve essere compreso tra 0 e 2."
         )
+    if not isinstance(stream, bool):
+        raise ValueError("Il parametro 'stream' deve essere un booleano.")
 
 
 def generate_response(
@@ -51,7 +56,8 @@ def generate_response(
     user_prompt: str,
     reasoning: bool,
     api_key: str,
-) -> dict:
+    stream: bool = False,
+) -> dict | Generator[dict, None, None]:
     """Dispatch an inference call to the requested provider.
 
     Args:
@@ -64,15 +70,18 @@ def generate_response(
         user_prompt: User message.
         reasoning: Forwarded to the provider as a reasoning toggle.
         api_key: Provider API key (non-empty string).
+        stream: When ``True`` the function returns a generator yielding
+            ``{"text": str, "finish_reason": str | None}`` chunks.
 
     Returns:
-        A dict with ``text``, ``input_tokens`` and ``output_tokens`` as
-        returned by the selected provider.
+        A dict with ``text``, ``input_tokens`` and ``output_tokens`` when
+        ``stream=False``, or a generator of ``{"text", "finish_reason"}``
+        chunks when ``stream=True``.
 
     Raises:
         ValueError: if ``provider`` is unknown or any input fails validation.
     """
-    _validate_input(provider, model, max_output_tokens, temperature, api_key)
+    _validate_input(provider, model, max_output_tokens, temperature, api_key, stream)
 
     handler_name = PROVIDER_NAMES.get(provider.lower())
     if handler_name is None:
@@ -90,4 +99,5 @@ def generate_response(
         user_prompt=user_prompt,
         reasoning=reasoning,
         api_key=api_key,
+        stream=stream,
     )
