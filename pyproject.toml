@@ -16,6 +16,7 @@ dependencies = [
     "openrouter>=0.9.1",
     "cohere>=5.13.0",
     "requests>=2.31.0",
+    "tiktoken>=0.7.0",
 ]
 
 [project.optional-dependencies]

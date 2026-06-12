@@ -20,23 +20,42 @@ ns_llm/
 │       ├── together_provider.py       # call_together()
 │       ├── ollama_provider.py         # call_ollama()
 │       └── openrouter_provider.py     # call_openrouter()
-└── embedding/
+├── embedding/
+│   ├── __init__.py
+│   ├── client.py                      # router (generate_embedding)
+│   └── providers/
+│       ├── together_provider.py       # call_together()
+│       └── openrouter_provider.py     # call_openrouter()
+├── reranking/
+│   ├── __init__.py
+│   ├── client.py                      # router (rerank)
+│   └── providers/
+│       ├── cohere_provider.py         # call_cohere_rerank()
+│       ├── jina_provider.py           # call_jina_rerank()
+│       ├── together_provider.py       # call_together_rerank()
+│       └── openrouter_provider.py     # call_openrouter_rerank()
+└── tokenizer/
     ├── __init__.py
-    ├── client.py                      # router (generate_embedding)
+    ├── client.py                      # router (count_tokens)
     └── providers/
-        ├── together_provider.py       # call_together()
-        └── openrouter_provider.py     # call_openrouter()
+        ├── openai_provider.py         # count_openai_tokens()
+        ├── anthropic_provider.py      # count_anthropic_tokens()
+        ├── cohere_provider.py         # count_cohere_tokens()
+        ├── ollama_provider.py         # count_ollama_tokens()
+        └── _estimation.py             # estimate_tokens()
 ```
 
 ## Provider Supportati
 
-| Provider | Inference | Embedding | Libreria | Modello consigliato per il testing |
-|---|---|---|---|---|
-| OpenAI | `call_openai()` | — | `openai` | `gpt-4.1-nano` |
-| Anthropic | `call_anthropic()` | — | `anthropic` | `claude-haiku-4-5` |
-| Together AI | `call_together()` | `call_together()` | `together` | `openai/gpt-oss-20b` (chat) / `together/bge-large-en-v1.5` (embed) |
-| Ollama | `call_ollama()` | — | `ollama` | `gpt-oss:20b-cloud` |
-| OpenRouter | `call_openrouter()` | `call_openrouter()` | `openrouter` | modello gratuito (suffisso `:free`) |
+| Provider | Inference | Embedding | Reranking | Token counting | Libreria | Modello consigliato per il testing |
+|---|---|---|---|---|---|---|
+| OpenAI | `call_openai()` | — | — | tiktoken (locale) | `openai` | `gpt-4.1-nano` |
+| Anthropic | `call_anthropic()` | — | — | API count_tokens | `anthropic` | `claude-haiku-4-5` |
+| Together AI | `call_together()` | `call_together()` | `call_together_rerank()` | stima | `together` | `openai/gpt-oss-20b` (chat) / `together/bge-large-en-v1.5` (embed) |
+| Ollama | `call_ollama()` | — | — | REST /tokenize | `ollama` | `gpt-oss:20b-cloud` |
+| OpenRouter | `call_openrouter()` | `call_openrouter()` | `call_openrouter_rerank()` | stima | `openrouter` | modello gratuito (suffisso `:free`) |
+| Cohere | — | — | `call_cohere_rerank()` | API tokenize | `cohere` | `rerank-v4.0-pro` |
+| Jina AI | — | — | `call_jina_rerank()` | — | `requests` | `jina-reranker-v3` |
 
 ## Installazione Dipendenze
 
@@ -144,6 +163,45 @@ Il dizionario di ritorno ha forma:
 - **Validazione di base**: `text` non vuoto, `api_key` non vuoto, `dimensions >= 0`. Provider sconosciuto → `ValueError` con elenco dei validi.
 - **Eccezioni SDK**: non vengono mai normalizzate; le eccezioni native di `together` o `openrouter` vengono propagate al chiamante.
 
+## Reranking
+
+Il modulo `ns_llm/reranking` riordina una lista di documenti per rilevanza rispetto a una query, restituendo score numerici.
+
+```python
+from ns_llm import rerank
+
+documents = [
+    {"id": "1", "text": "Parigi e la capitale della Francia."},
+    {"id": "2", "text": "Berlino e la capitale della Germania."},
+    {"id": "3", "text": "Roma e la capitale dell'Italia."},
+]
+
+results = rerank(
+    provider="cohere",
+    model="rerank-v4.0-pro",
+    query="Qual e la capitale della Germania?",
+    documents=documents,
+    top_n=2,
+    api_key="...",
+)
+
+for r in results:
+    print(f"{r['score']:.3f} - {r['text']}")
+```
+
+### Firma del router reranking
+
+```python
+def rerank(
+    provider: str,            # "cohere" | "together" | "jina" | "openrouter"
+    model: str,
+    query: str,
+    documents: list[dict],    # [{"id": str, "text": str}, ...]
+    top_n: int | None = None, # None = restituisce tutti
+    api_key: str,
+) -> list[dict]:              # [{"id", "text", "score", "original_index"}, ...]
+```
+
 ## Note Implementative
 
 - **Anthropic**: il `system_prompt` non fa parte del campo `messages` ma viene passato come parametro separato. La struttura della risposta è diversa dagli altri provider (lista di blocchi tipizzati). Quando `reasoning=True` su un modello `opus` viene attivato `thinking={"type": "adaptive"}` e `temperature` viene ignorata (con `UserWarning`).
@@ -152,6 +210,44 @@ Il dizionario di ritorno ha forma:
 - **Ollama**: utilizza esclusivamente Ollama Cloud (host `https://ollama.com`, autenticazione Bearer). L'istanza locale non è supportata. Il toggle di ragionamento è il parametro top-level `think=True/False` (NON dentro `options`).
 - **OpenRouter**: gateway multi-provider con SDK Python ufficiale. Il client si gestisce come context manager (`with`). Il payload `reasoning` usa lo schema OpenRouter: `{"effort": "high"}` quando acceso, `{"effort": "none"}` quando spento.
 - **Reasoning esplicito**: il parametro `reasoning` non è supportato da tutti i modelli; verificare la documentazione del provider prima dell'uso. La libreria lo imposta **sempre esplicitamente** (anche su `False`) per evitare di dipendere dai default SDK, che possono cambiare tra release.
+
+## Token Counting
+
+Il modulo `ns_llm/tokenizer` conta i token di un testo prima di inviare richieste ai provider. Utile per stimare costi e verificare limiti di contesto.
+
+```python
+from ns_llm import count_tokens
+
+# OpenAI - locale, velocissimo
+n = count_tokens(provider="openai", model="gpt-4.1-nano", text="Ciao!")
+print(n)
+
+# Anthropic - API call
+n = count_tokens(
+    provider="anthropic",
+    model="claude-haiku-4-5",
+    text="Ciao!",
+    api_key="sk-ant-...",
+)
+
+# Together - stima approssimata
+n = count_tokens(
+    provider="together",
+    model="meta-llama/Llama-3-70b",
+    text="Ciao!",
+)
+```
+
+### Provider supportati per token counting
+
+| Provider | Metodo | Accuratezza | Richiede API key |
+|----------|--------|-------------|------------------|
+| OpenAI | tiktoken (locale) | Esatta | No |
+| Anthropic | API count_tokens | Esatta | Si |
+| Cohere | API tokenize | Esatta | Si |
+| Ollama | REST /api/tokenize | Esatta | No (locale) |
+| Together | Stima (1 token ~ 4 chars) | Approssimata | No |
+| OpenRouter | Stima (1 token ~ 4 chars) | Approssimata | No |
 
 ## Risorse
 
